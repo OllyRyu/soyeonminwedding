@@ -777,6 +777,18 @@ function wireFeatures(){
 /* ============================================================
    갤러리 라이트박스 (확대 + 좌우 넘기기)
    ============================================================ */
+/* 팝업이 열려 있을 때 '뒤로가기'로 페이지가 꺼지지 않고 팝업만 닫히게 */
+function pushModalState(){ try{ history.pushState({ modal:true }, ''); }catch(e){} }
+function popModalState(){ if(history.state && history.state.modal){ try{ history.back(); }catch(e){} } }
+function closeTopModal(){
+  const lb=document.getElementById('lightbox');
+  const cm=document.getElementById('contactModal');
+  const gm=document.getElementById('gbModal');
+  if(lb && lb.classList.contains('open')){ closeLightbox(true); return; }
+  if(cm && cm.classList.contains('open')){ closeContact(true); return; }
+  if(gm && gm.classList.contains('open')){ closeGb(true); return; }
+}
+
 let lbIndex=0, lbBuilt=false;
 function buildLbTrack(){
   const track=document.getElementById('lbTrack'); if(!track) return;
@@ -807,11 +819,14 @@ function openLightbox(i){
   document.body.style.overflow='hidden';
   lbIndex=Math.max(0, Math.min(DATA.gallery.length-1, i));
   requestAnimationFrame(()=> lbGoTo(lbIndex, false));   // 열린 뒤 폭 측정하여 위치 세팅
+  pushModalState();
 }
-function closeLightbox(){
+function closeLightbox(fromPop){
   const lb=document.getElementById('lightbox');
+  if(!lb.classList.contains('open')) return;
   lb.classList.remove('open'); lb.setAttribute('aria-hidden','true');
   document.body.style.overflow='';
+  if(!fromPop) popModalState();
 }
 function wireLightbox(){
   const lb=document.getElementById('lightbox'); if(!lb || lb.dataset.wired) return;
@@ -859,11 +874,14 @@ function openContact(side){
   const m=document.getElementById('contactModal');
   m.classList.add('open'); m.setAttribute('aria-hidden','false');
   document.body.style.overflow='hidden';
+  pushModalState();
 }
-function closeContact(){
+function closeContact(fromPop){
   const m=document.getElementById('contactModal');
+  if(!m.classList.contains('open')) return;
   m.classList.remove('open'); m.setAttribute('aria-hidden','true');
   document.body.style.overflow='';
+  if(!fromPop) popModalState();
 }
 function wireContact(){
   const m=document.getElementById('contactModal'); if(!m || m.dataset.wired) return;
@@ -919,11 +937,14 @@ function openGb(){
   const m=document.getElementById('gbModal'); if(!m) return;
   m.classList.add('open'); m.setAttribute('aria-hidden','false');
   document.body.style.overflow='hidden';
+  pushModalState();
 }
-function closeGb(){
+function closeGb(fromPop){
   const m=document.getElementById('gbModal'); if(!m) return;
+  if(!m.classList.contains('open')) return;
   m.classList.remove('open'); m.setAttribute('aria-hidden','true');
   document.body.style.overflow='';
+  if(!fromPop) popModalState();
 }
 function wireGb(){
   const m=document.getElementById('gbModal'); if(!m || m.dataset.wired) return;
@@ -1168,6 +1189,7 @@ initKakao();
 initKakaoMap();
 wireBgm();
 initFx();
+window.addEventListener('popstate', closeTopModal);   // 뒤로가기 → 페이지 종료 대신 팝업만 닫기
 </script>
 </body>
 </html>

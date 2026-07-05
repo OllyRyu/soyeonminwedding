@@ -137,6 +137,8 @@
   .lb-track.anim{ transition:transform .34s cubic-bezier(.4,0,.2,1); }
   .lb-slide{ flex:0 0 100%; height:100%; display:flex; align-items:center; justify-content:center; padding:0 6%; }
   .lb-slide img{ max-width:100%; max-height:82%; object-fit:contain; border-radius:6px; box-shadow:0 20px 60px -18px rgba(0,0,0,.4); user-select:none; -webkit-user-drag:none; pointer-events:none; }
+  .lb-close{ position:absolute; top:14px; right:14px; z-index:4; width:38px; height:38px; border:0; border-radius:50%; background:rgba(47,43,40,.1); color:var(--text); font-size:17px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .lb-close:active{ background:rgba(47,43,40,.2); }
   .lb-bar{ position:absolute; bottom:24px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:20px; z-index:3; }
   .lb-arrow{ background:none; border:0; padding:2px 4px; color:var(--soft); font-family:var(--heading); font-size:30px; line-height:1; cursor:pointer; transition:color .2s ease, opacity .2s ease; }
   .lb-arrow:active{ color:var(--accent); }
@@ -232,6 +234,7 @@
 
   <!-- 사진 확대 라이트박스 -->
   <div id="lightbox" class="lb" aria-hidden="true">
+    <button class="lb-close" id="lbClose" aria-label="닫기">✕</button>
     <div class="lb-viewport" id="lbViewport"><div class="lb-track" id="lbTrack"></div></div>
     <div class="lb-bar">
       <button class="lb-arrow lb-prev" id="lbPrev" aria-label="이전 사진">‹</button>
@@ -311,7 +314,7 @@ const DATA = {
   maps:{
     kakao:'https://map.kakao.com/?q=' + encodeURIComponent('인천 송도 메리빌리아'),
     naver:'https://map.naver.com/p/search/' + encodeURIComponent('인천 송도 메리빌리아'),
-    tmap:'https://www.tmap.co.kr/'
+    tmap:'tmap://search?name=' + encodeURIComponent('인천 송도 메리빌리아')
   },
   transport:[
     { icon:'🅿️', title:'주차 (5시간 무료)', lines:[
@@ -420,14 +423,18 @@ function locationSection(){
     <div class="card" style="margin:22px 0; overflow:hidden;">
       <div id="kakaoMap" style="width:100%; height:230px;"></div>
     </div>
-    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px;">
-      <a class="btn" style="padding:12px 0; display:flex; align-items:center; justify-content:center; gap:7px;" href="${DATA.maps.kakao}" target="_blank" rel="noopener">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="#FFCD00"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:7px;">
+      <a class="btn" style="padding:11px 0; display:flex; flex-direction:column; align-items:center; gap:5px;" href="${DATA.maps.kakao}" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFCD00"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
         카카오맵
       </a>
-      <a class="btn" style="padding:12px 0; display:flex; align-items:center; justify-content:center; gap:7px;" href="${DATA.maps.naver}" target="_blank" rel="noopener">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="#03C75A"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+      <a class="btn" style="padding:11px 0; display:flex; flex-direction:column; align-items:center; gap:5px;" href="${DATA.maps.naver}" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#03C75A"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
         네이버지도
+      </a>
+      <a class="btn" style="padding:11px 0; display:flex; flex-direction:column; align-items:center; gap:5px;" href="${DATA.maps.tmap}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#EA1E63"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+        티맵
       </a>
     </div>
     <div style="margin-top:8px;">${t}</div>
@@ -811,6 +818,7 @@ function wireLightbox(){
   lb.dataset.wired='1';
   const vp=document.getElementById('lbViewport');
   const track=document.getElementById('lbTrack');
+  document.getElementById('lbClose').addEventListener('click', e=>{ e.stopPropagation(); closeLightbox(); });
   document.getElementById('lbPrev').addEventListener('click', e=>{ e.stopPropagation(); lbGoTo(lbIndex-1); });
   document.getElementById('lbNext').addEventListener('click', e=>{ e.stopPropagation(); lbGoTo(lbIndex+1); });
 
@@ -821,7 +829,7 @@ function wireLightbox(){
     track.style.transform=`translateX(${-lbIndex*w+dx}px)`; };
   const onUp=()=>{ if(!dragging) return; dragging=false;
     if(Math.abs(dx)>w*0.18) lbGoTo(lbIndex + (dx<0?1:-1));
-    else { lbGoTo(lbIndex); if(moved<8) closeLightbox(); }   // 거의 안 움직이면 탭 → 닫기
+    else lbGoTo(lbIndex);   // 스냅백만 (닫기는 X 버튼으로)
   };
   vp.addEventListener('pointerdown', e=> onDown(e.clientX));
   window.addEventListener('pointermove', e=> onMove(e.clientX));

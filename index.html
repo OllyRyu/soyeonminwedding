@@ -977,6 +977,14 @@ function initKakaoMap(){
           }
         });
       }catch(e){}
+      // 컨테이너가 나중에 보이며 회색으로 뜨는 것 방지(relayout 보정)
+      const fix=()=>{ const c=map.getCenter(); map.relayout(); map.setCenter(c); };
+      setTimeout(fix, 500);
+      const sec=el.closest('.reveal') || el.closest('section');
+      if(sec && 'IntersectionObserver' in window){
+        const io2=new IntersectionObserver(es=>{ es.forEach(en=>{ if(en.isIntersecting){ fix(); } }); }, { threshold:.1 });
+        io2.observe(sec);
+      }
     });
   };
   document.head.appendChild(s);

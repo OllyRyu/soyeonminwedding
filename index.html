@@ -426,17 +426,17 @@ function locationSection(){
       <div id="kakaoMap" style="width:100%; height:230px;"></div>
     </div>
     <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:7px;">
-      <a class="btn" style="padding:11px 0; display:flex; flex-direction:column; align-items:center; gap:5px;" href="${DATA.maps.kakao}" target="_blank" rel="noopener">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFCD00"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+      <a class="btn" style="padding:11px 0; display:flex; flex-direction:column; align-items:center; gap:6px;" href="${DATA.maps.tmap}">
+        <span style="display:inline-flex; width:22px; height:22px; border-radius:7px; background:#EA1E63; color:#fff; font-family:var(--sans); font-weight:800; font-size:12px; align-items:center; justify-content:center;">T</span>
+        티맵
+      </a>
+      <a class="btn" style="padding:11px 0; display:flex; flex-direction:column; align-items:center; gap:6px;" href="${DATA.maps.kakao}" target="_blank" rel="noopener">
+        <span style="display:inline-flex; width:22px; height:22px; border-radius:7px; background:#FEE500; color:#3A1D1D; font-family:var(--sans); font-weight:800; font-size:12px; align-items:center; justify-content:center;">K</span>
         카카오맵
       </a>
-      <a class="btn" style="padding:11px 0; display:flex; flex-direction:column; align-items:center; gap:5px;" href="${DATA.maps.naver}" target="_blank" rel="noopener">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="#03C75A"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+      <a class="btn" style="padding:11px 0; display:flex; flex-direction:column; align-items:center; gap:6px;" href="${DATA.maps.naver}" target="_blank" rel="noopener">
+        <span style="display:inline-flex; width:22px; height:22px; border-radius:7px; background:#03C75A; color:#fff; font-family:var(--sans); font-weight:800; font-size:12px; align-items:center; justify-content:center;">N</span>
         네이버지도
-      </a>
-      <a class="btn" style="padding:11px 0; display:flex; flex-direction:column; align-items:center; gap:5px;" href="${DATA.maps.tmap}">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="#EA1E63"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
-        티맵
       </a>
     </div>
     <div style="margin-top:8px;">${t}</div>

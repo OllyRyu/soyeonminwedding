@@ -399,9 +399,6 @@ function gallerySection(){
 }
 
 function locationSection(){
-  const dx=0.006, dy=0.0038;
-  const bbox=[DATA.lng-dx, DATA.lat-dy, DATA.lng+dx, DATA.lat+dy].map(n=>n.toFixed(5)).join('%2C');
-  const mapSrc=`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${DATA.lat.toFixed(5)}%2C${DATA.lng.toFixed(5)}`;
   const t = DATA.transport.map(x=>`
     <div style="background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:15px 17px; margin-bottom:10px; text-align:left;">
       <div style="display:flex; align-items:center; gap:9px;">
@@ -421,7 +418,7 @@ function locationSection(){
       <p class="sans" style="color:var(--muted); font-size:13px; margin-top:5px;">${esc(DATA.address)}</p>
     </div>
     <div class="card" style="margin:22px 0; overflow:hidden;">
-      <iframe title="예식장 지도" src="${mapSrc}" loading="lazy" style="width:100%; height:230px; border:0; display:block;"></iframe>
+      <div id="kakaoMap" style="width:100%; height:230px;"></div>
     </div>
     <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px;">
       <a class="btn" style="padding:12px 0; display:flex; align-items:center; justify-content:center; gap:7px;" href="${DATA.maps.kakao}" target="_blank" rel="noopener">
@@ -959,6 +956,32 @@ function initKakao(){
   document.head.appendChild(s);
 }
 
+/* 카카오맵(인터랙티브) — '메리빌리아' 검색으로 정확한 위치 표시 */
+function initKakaoMap(){
+  if(!CONFIG.kakaoJsKey) return;
+  const el=document.getElementById('kakaoMap'); if(!el) return;
+  const s=document.createElement('script');
+  s.src=`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${CONFIG.kakaoJsKey}&autoload=false&libraries=services`;
+  s.onload=()=>{
+    if(!window.kakao || !kakao.maps) return;
+    kakao.maps.load(()=>{
+      const fallback=new kakao.maps.LatLng(DATA.lat, DATA.lng);
+      const map=new kakao.maps.Map(el, { center:fallback, level:3 });
+      const marker=new kakao.maps.Marker({ map, position:fallback });
+      try{
+        const ps=new kakao.maps.services.Places();
+        ps.keywordSearch('인천 송도 메리빌리아', (data, status)=>{
+          if(status===kakao.maps.services.Status.OK && data && data[0]){
+            const pos=new kakao.maps.LatLng(data[0].y, data[0].x);
+            map.setCenter(pos); marker.setPosition(pos);
+          }
+        });
+      }catch(e){}
+    });
+  };
+  document.head.appendChild(s);
+}
+
 /* ============================================================
    5) 방명록
    ============================================================ */
@@ -1110,6 +1133,7 @@ function initFx(){
 /* INIT */
 render();
 initKakao();
+initKakaoMap();
 wireBgm();
 initFx();
 </script>

@@ -1063,17 +1063,33 @@ async function gbAdd(entry){
 async function gbDelete(id){
   const item=gbCache.find(c=>String(c.id)===String(id)); if(!item) return;
   const pass=prompt('작성 시 입력한 비밀번호를 입력하세요'); if(pass===null) return;
+
+  if(CONFIG.guestbookEndpoint){
+    // 서버(구글시트) 방명록: 비밀번호 검증은 서버가 함 → 미리 지우지 말고, 삭제 요청 후 재조회로 실제 상태 반영
+    showToast('삭제 처리 중…','⏳');
+    try{
+      await fetch(CONFIG.guestbookEndpoint, { method:'POST', mode:'no-cors',
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+        body:JSON.stringify({ type:'guestbook', action:'delete', id, password:pass }) });
+    }catch(e){}
+    await new Promise(r=> setTimeout(r, 900));   // 서버 처리 대기
+    await gbLoad();                              // 서버에서 목록 재조회
+    const still=gbCache.some(c=>String(c.id)===String(id));
+    if(still) showToast('비밀번호가 일치하지 않습니다','✕');
+    else{
+      gbSaveLocal(gbLoadLocal().filter(c=>String(c.id)!==String(id)));   // 로컬 백업도 정리
+      showToast('메시지가 삭제되었습니다');
+    }
+    return;
+  }
+
+  // 로컬 전용(엔드포인트 없음): 클라이언트가 비밀번호 검증
   if(item.password!=null && item.password!=='' && String(pass)!==String(item.password)){
     showToast('비밀번호가 일치하지 않습니다','✕'); return;
   }
   gbCache=gbCache.filter(c=>String(c.id)!==String(id));
   gbSaveLocal(gbLoadLocal().filter(c=>String(c.id)!==String(id)));
   gbRender();
-  if(CONFIG.guestbookEndpoint){
-    await fetch(CONFIG.guestbookEndpoint, { method:'POST', mode:'no-cors',
-      headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-      body:JSON.stringify({ type:'guestbook', action:'delete', id, password:pass }) });
-  }
   showToast('메시지가 삭제되었습니다');
 }
 

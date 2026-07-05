@@ -74,19 +74,19 @@
   .field::placeholder{ color:var(--muted); }
 
   /* ── 커버 (풀스크린 배경 사진) ── */
-  .cover{ height:100vh; height:100svh; min-height:620px; background:transparent; }
+  .cover{ height:100vh; height:100lvh; min-height:620px; background:transparent; }
   /* 바깥 컨테이너가 위쪽 모서리만 둥글게 잘라냄(사진 요소엔 라운드 없음, 아래는 각짐) */
   .cover-clip{ width:100%; height:100%; overflow:hidden; }
   .cover-photo{ position:relative; width:100%; height:100%; overflow:hidden;
           display:flex; flex-direction:column; align-items:center; justify-content:space-between; text-align:center;
-          padding:60px 26px 5px; }
+          padding:60px 26px calc(14px + env(safe-area-inset-bottom)); }
   .cover-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 50%; z-index:0; transform:scale(1.04); }
   .cover-top{ position:relative; z-index:1; margin-top:92px; font-family:'Cinzel',serif; font-weight:400;
               font-size:26px; line-height:1.25; letter-spacing:.08em; color:#fff; text-shadow:0 2px 18px rgba(0,0,0,.45); }
   .cover-inner{ position:relative; z-index:1; }
   .cover-names .n{ font-family:var(--heading); font-size:36px; font-weight:500; letter-spacing:.12em; color:#fff; text-shadow:0 2px 20px rgba(0,0,0,.45); }
   .cover-names .amp{ font-family:var(--heading); font-style:italic; font-size:22px; color:var(--accent-soft); margin:2px 0; display:block; text-shadow:0 2px 14px rgba(0,0,0,.4); }
-  .cover-meta{ margin-top:14px; color:rgba(255,255,255,.96); font-family:var(--sans); font-size:13px; font-weight:400; letter-spacing:.05em; line-height:1.35; text-shadow:0 1px 14px rgba(0,0,0,.55); }
+  .cover-meta{ margin-top:14px; color:rgba(255,255,255,.96); font-family:var(--sans); font-size:13px; font-weight:400; letter-spacing:.05em; line-height:1.15; text-shadow:0 1px 14px rgba(0,0,0,.55); }
 
   /* ── 캘린더 ── */
   .cal{ max-width:320px; margin:8px auto 0; }
@@ -161,6 +161,9 @@
   .gb-scroll::-webkit-scrollbar{ width:4px; }
   .gb-scroll::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
   .gb-scroll::-webkit-scrollbar-track{ background:transparent; }
+  /* 방명록 1·2·3등 왕관 */
+  .gb-crown{ position:relative; display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; margin-right:6px; flex:0 0 auto; }
+  .gb-crown b{ position:absolute; top:57%; left:50%; transform:translate(-50%,-50%); font-family:var(--sans); font-size:9px; font-weight:700; color:#fff; line-height:1; }
   .acc-head{ display:flex; justify-content:space-between; align-items:center; padding:16px 18px; cursor:pointer; }
   .acc-body{ max-height:0; overflow:hidden; transition:max-height .35s ease; }
   .acc.open .acc-body{ max-height:520px; }
@@ -257,7 +260,7 @@
       <form id="gbForm" style="display:flex; flex-direction:column; gap:10px;">
         <input class="field" name="gbName" placeholder="성함" maxlength="20" required>
         <input class="field" name="gbPass" type="password" placeholder="비밀번호" maxlength="20" required>
-        <textarea class="field" name="gbMsg" placeholder="200자 이내로 작성해 주세요" maxlength="200" rows="4" style="resize:none;" required></textarea>
+        <textarea class="field" name="gbMsg" placeholder="300자 이내로 작성해 주세요" maxlength="300" rows="4" style="resize:none;" required></textarea>
         <button type="submit" class="btn btn-accent" style="padding:14px; font-size:14px;">작성완료</button>
       </form>
     </div>
@@ -969,6 +972,10 @@ function gbFmtDate(iso){
   const p=n=>String(n).padStart(2,'0');
   return `${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
+function gbCrown(rank){   // 1등 금 / 2등 은 / 3등 동 왕관(숫자 포함)
+  const col = rank===1 ? '#E9B824' : rank===2 ? '#AEB4BE' : '#C98A4B';
+  return `<span class="gb-crown"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="${col}" d="M2.6 8.4l4.1 3 5.3-6.4 5.3 6.4 4.1-3-1.7 10H4.3l-1.7-10z"/></svg><b>${rank}</b></span>`;
+}
 function gbRender(){
   const listEl=document.getElementById('gbList'); const cntEl=document.getElementById('gbCount');
   if(!listEl) return;
@@ -977,17 +984,19 @@ function gbRender(){
     listEl.innerHTML=`<p class="sans" style="text-align:center; color:var(--muted); font-size:13px; padding:18px 0;">첫 번째 축하 메시지를 남겨 주세요 🤍</p>`;
     return;
   }
-  listEl.innerHTML=gbCache.map(c=>`
+  const asc=[...gbCache].sort((a,b)=> new Date(a.date)-new Date(b.date));
+  const rankOf={}; asc.slice(0,3).forEach((c,i)=>{ rankOf[c.id]=i+1; });   // 먼저 남긴 3명 = 1·2·3등
+  listEl.innerHTML=gbCache.map(c=>{ const rk=rankOf[c.id]; return `
     <div class="card" style="padding:14px 16px;">
       <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px;">
-        <span class="sans" style="font-weight:500; font-size:13.5px;">${esc(c.name)}</span>
+        <span class="sans" style="font-weight:500; font-size:13.5px; display:inline-flex; align-items:center;">${rk?gbCrown(rk):''}${esc(c.name)}</span>
         <span style="display:flex; gap:10px; align-items:center;">
           <span class="sans" style="font-size:11px; color:var(--muted);">${esc(gbFmtDate(c.date))}</span>
           <button class="gb-del" data-id="${esc(c.id)}" title="삭제" style="background:none; border:0; color:var(--muted); cursor:pointer; font-size:13px; line-height:1; padding:2px;">✕</button>
         </span>
       </div>
       <p class="sans" style="white-space:pre-line; margin-top:8px; font-size:13.5px; line-height:1.7; color:var(--soft);">${esc(c.message)}</p>
-    </div>`).join('');
+    </div>`; }).join('');
   listEl.querySelectorAll('.gb-del').forEach(b=> b.addEventListener('click', ()=> gbDelete(b.dataset.id)));
 }
 function gbFetchRemote(){
@@ -1097,20 +1106,11 @@ function initFx(){
   tick();
 }
 
-/* 커버 높이를 로드 시점 픽셀값으로 고정 — 스크롤 중 주소창이 접혀도 사진이 확대되지 않도록 */
-function lockCoverHeight(){
-  const c=document.querySelector('.cover');
-  if(c) c.style.height=window.innerHeight+'px';
-}
-
 /* INIT */
 render();
 initKakao();
 wireBgm();
 initFx();
-lockCoverHeight();
-window.addEventListener('load', lockCoverHeight);
-window.addEventListener('orientationchange', ()=> setTimeout(lockCoverHeight, 300));
 </script>
 </body>
 </html>

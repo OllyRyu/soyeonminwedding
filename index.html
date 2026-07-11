@@ -51,7 +51,7 @@
     font-family:var(--heading); font-style:italic; font-size:21px; letter-spacing:.08em;
     text-transform:uppercase; color:var(--accent); margin-bottom:14px;
   }
-  .stitle{ font-family:var(--serifko); font-weight:300; font-size:19px; letter-spacing:.28em; color:var(--text); }
+  .stitle{ font-family:var(--serifko); font-weight:300; font-size:23px; letter-spacing:.28em; color:var(--text); }
   .rule{ width:1px; height:46px; background:var(--line); margin:0 auto; }
   .rule-h{ width:40px; height:1px; background:var(--accent-soft); margin:20px auto; }
 
@@ -343,7 +343,7 @@ const DATA = {
           tel:'010-4186-8511', fatherTel:'010-2532-0745', motherTel:'010-3299-8511' },
   date:new Date(2026,9,25,12,40,0),         // 2026-10-25 일 12:40
   dateText:'2026년 10월 25일 일요일 오후 12시 40분',
-  dateShort:'2026. 10. 25 SUN 12:40 PM',
+  dateShort:'2026.10.25. SUN',
   venue:'메리빌리아 송도',
   hall:'프리모소르홀',
   address:'인천광역시 연수구 송도과학로 16번길 33-1 (메리빌리아 웨딩홀)',
@@ -488,7 +488,7 @@ function locationSection(){
         <span style="display:inline-flex; width:22px; height:22px; border-radius:7px; background:#EA1E63; color:#fff; font-family:var(--sans); font-weight:800; font-size:12px; align-items:center; justify-content:center;">T</span>
         티맵
       </a>
-      <a class="btn" style="padding:11px 0; display:flex; flex-direction:column; align-items:center; gap:6px;" href="${DATA.maps.kakao}" target="_blank" rel="noopener">
+      <a class="btn" id="mapKakao" style="padding:11px 0; display:flex; flex-direction:column; align-items:center; gap:6px;" href="${DATA.maps.kakao}" target="_blank" rel="noopener">
         <span style="display:inline-flex; width:22px; height:22px; border-radius:7px; background:#FEE500; color:#3A1D1D; font-family:var(--sans); font-weight:800; font-size:12px; align-items:center; justify-content:center;">K</span>
         카카오맵
       </a>
@@ -1132,6 +1132,9 @@ function initKakaoMap(){
           if(status===kakao.maps.services.Status.OK && data && data[0]){
             const pos=new kakao.maps.LatLng(data[0].y, data[0].x);
             map.setCenter(pos); marker.setPosition(pos);
+            // 카카오맵 버튼을 정확한 장소 상세 페이지로 연결(검색 화면 대신 핀 찍힌 장소가 바로 열림)
+            const a=document.getElementById('mapKakao');
+            if(a && data[0].place_url) a.href=data[0].place_url;
           }
         });
       }catch(e){}

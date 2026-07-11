@@ -12,7 +12,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:title" content="류영민 ♥ 이소연 결혼합니다" />
 <meta property="og:description" content="2026년 10월 25일 일요일 오후 12시 40분 · 메리빌리아 송도 프리모소르홀" />
-<meta property="og:image" content="https://ollyryu.github.io/soyeonminwedding/photo/bg.png" />
+<meta property="og:image" content="https://ollyryu.github.io/soyeonminwedding/photo/bg.jpg" />
 <meta property="og:url" content="https://ollyryu.github.io/soyeonminwedding/" />
 <meta name="twitter:card" content="summary_large_image" />
 
@@ -295,7 +295,7 @@ const DATA = {
   address:'인천광역시 연수구 송도과학로 16번길 33-1 (메리빌리아 웨딩홀)',
   lat:37.38200, lng:126.65920,
   greeting:'서로 다른 길을 걸어온 두 사람이\n이제 같은 곳을 바라보며\n새로운 길을 함께 걷고자 합니다.\n\n저희 두 사람의 시작을\n귀한 걸음으로 축복해 주시면\n더없는 기쁨이겠습니다.',
-  cover:'photo/bg.png',          // ▶ 커버(맨 위 큰 배경) 사진 — 같은 폴더의 photo/bg.png
+  cover:'photo/bg.jpg',          // ▶ 커버(맨 위 큰 배경) 사진 — 같은 폴더의 photo/bg.jpg
   gallery:[
     'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=80',
     'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=900&q=80',
@@ -987,7 +987,7 @@ function shareKakao(){
   if(window.Kakao && Kakao.isInitialized && Kakao.isInitialized()){
     Kakao.Share.sendDefault({ objectType:'feed',
       content:{ title:`${DATA.groom.name} ♥ ${DATA.bride.name} 결혼합니다`,
-        description:`${DATA.dateText}\n${DATA.venue} ${DATA.hall}`, imageUrl:'https://ollyryu.github.io/soyeonminwedding/photo/bg.png',
+        description:`${DATA.dateText}\n${DATA.venue} ${DATA.hall}`, imageUrl:'https://ollyryu.github.io/soyeonminwedding/photo/bg.jpg',
         link:{ mobileWebUrl:shareUrl(), webUrl:shareUrl() } },
       buttons:[{ title:'청첩장 보기', link:{ mobileWebUrl:shareUrl(), webUrl:shareUrl() } }] });
   }else{ copyShareLink(); }

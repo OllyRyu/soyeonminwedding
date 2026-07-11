@@ -484,7 +484,7 @@ function locationSection(){
       <div id="kakaoMap" style="width:100%; height:230px;"></div>
     </div>
     <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:7px;">
-      <a class="btn" style="padding:11px 0; display:flex; flex-direction:column; align-items:center; gap:6px;" href="${DATA.maps.tmap}">
+      <a class="btn" id="mapTmap" style="padding:11px 0; display:flex; flex-direction:column; align-items:center; gap:6px;" href="${DATA.maps.tmap}">
         <span style="display:inline-flex; width:22px; height:22px; border-radius:7px; background:#EA1E63; color:#fff; font-family:var(--sans); font-weight:800; font-size:12px; align-items:center; justify-content:center;">T</span>
         티맵
       </a>
@@ -769,6 +769,22 @@ async function submitRsvp(payload){
 }
 
 function wireFeatures(){
+  // 티맵: 앱 전용 링크(tmap://)라 앱이 없으면 아무 반응이 없음 → 1.5초 내 화면 전환이 없으면 미설치 안내
+  const tmapBtn=document.getElementById('mapTmap');
+  if(tmapBtn){
+    tmapBtn.addEventListener('click', e=>{
+      e.preventDefault();
+      let left=false;
+      const onHide=()=>{ if(document.visibilityState==='hidden') left=true; };
+      document.addEventListener('visibilitychange', onHide);
+      location.href=DATA.maps.tmap;
+      setTimeout(()=>{
+        document.removeEventListener('visibilitychange', onHide);
+        if(!left && document.visibilityState==='visible') showToast('티맵 앱이 설치되어 있지 않아요','✕');
+      }, 1500);
+    });
+  }
+
   // 계좌 아코디언
   document.querySelectorAll('.acc-head').forEach(h=>{
     h.addEventListener('click', ()=> h.closest('.acc').classList.toggle('open'));

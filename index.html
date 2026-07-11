@@ -188,6 +188,18 @@
     transition:opacity .3s, transform .3s; display:flex; align-items:center; gap:8px; }
   .toast.show{ opacity:1; transform:none; }
 
+  /* ── 초기 로딩 화면(폰트 로드 완료 전까지 표시 → 글씨체 깜빡임 방지) ── */
+  #loader{ position:fixed; inset:0; z-index:400; background:#f8f4ee; display:flex; align-items:center; justify-content:center;
+    transition:opacity .6s ease; }
+  #loader.loaded{ opacity:0; pointer-events:none; }
+  #loader.hidden{ display:none; }
+  .loader-inner{ display:flex; flex-direction:column; align-items:center; gap:20px; }
+  .loader-ring{ width:38px; height:38px; border-radius:50%; border:2px solid var(--accent-soft); border-top-color:var(--accent);
+    animation:ldspin .85s linear infinite; }
+  .loader-names{ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:23px; letter-spacing:.08em; color:var(--accent); }
+  .loader-sub{ font-family:'Noto Sans KR',sans-serif; font-size:11px; letter-spacing:.28em; color:var(--muted); }
+  @keyframes ldspin{ to{ transform:rotate(360deg); } }
+
   .rsvp-lbl{ display:block; font-family:var(--sans); font-size:12px; color:var(--soft); margin-bottom:7px; letter-spacing:.04em; }
   .seg{ position:relative; display:block; cursor:pointer; }
   .seg input{ position:absolute; opacity:0; inset:0; }
@@ -215,6 +227,13 @@
 </head>
 
 <body>
+  <div id="loader">
+    <div class="loader-inner">
+      <div class="loader-ring"></div>
+      <div class="loader-names">영민 &amp; 소연</div>
+      <div class="loader-sub">WEDDING INVITATION</div>
+    </div>
+  </div>
   <div id="app">
     <div class="frame">
       <div id="invitation"></div>
@@ -226,7 +245,7 @@
   <canvas id="fx" class="fx" aria-hidden="true"></canvas>
 
   <!-- 배경음악 + 상단 재생/정지 버튼 -->
-  <audio id="bgm" src="bgm/bgm2.mp4" loop preload="auto"></audio>
+  <audio id="bgm" src="bgm/bgm2.mp4" loop preload="metadata"></audio>
   <div class="bgm-ctrl">
     <button id="bgmToggle" class="bgm-btn" aria-label="배경음악 재생/정지" title="배경음악">
       <svg class="ic-play" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -268,6 +287,19 @@
         <input class="field" name="gbPass" type="password" placeholder="비밀번호" maxlength="20" required>
         <textarea class="field" name="gbMsg" placeholder="300자 이내로 작성해 주세요" maxlength="300" rows="4" style="resize:none;" required></textarea>
         <button type="submit" class="btn btn-accent" style="padding:14px; font-size:14px;">작성완료</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 방명록 삭제 비밀번호 입력 팝업 -->
+  <div id="pwModal" class="cm" aria-hidden="true">
+    <div class="cm-panel">
+      <button class="cm-close" id="pwClose" aria-label="닫기">✕</button>
+      <div class="cm-title sans">비밀번호 확인</div>
+      <p class="sans" style="color:var(--soft); font-size:13px; margin:-4px 0 12px;">작성 시 입력한 비밀번호를 입력해 주세요.</p>
+      <form id="pwForm" style="display:flex; flex-direction:column; gap:10px;">
+        <input class="field" id="pwInput" type="password" placeholder="비밀번호" maxlength="20" autocomplete="off">
+        <button type="submit" class="btn btn-accent" style="padding:14px; font-size:14px;">확인</button>
       </form>
     </div>
   </div>
@@ -795,9 +827,46 @@ function closeTopModal(){
   const lb=document.getElementById('lightbox');
   const cm=document.getElementById('contactModal');
   const gm=document.getElementById('gbModal');
+  const pm=document.getElementById('pwModal');
+  if(pm && pm.classList.contains('open')){ closePw(null, true); return; }
   if(lb && lb.classList.contains('open')){ closeLightbox(true); return; }
   if(cm && cm.classList.contains('open')){ closeContact(true); return; }
   if(gm && gm.classList.contains('open')){ closeGb(true); return; }
+}
+
+/* 커스텀 비밀번호 입력 팝업(네이티브 prompt 대체 — '~페이지의 내용' 문구 안 보이게) */
+let pwResolve=null;
+function closePw(val, fromPop){
+  const m=document.getElementById('pwModal'); if(!m) return;
+  if(!m.classList.contains('open')) return;
+  m.classList.remove('open'); m.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+  if(!fromPop) popModalState();
+  const r=pwResolve; pwResolve=null;
+  if(r) r(val);
+}
+function askPassword(){
+  return new Promise(resolve=>{
+    const m=document.getElementById('pwModal');
+    const form=document.getElementById('pwForm');
+    const input=document.getElementById('pwInput');
+    const closeBtn=document.getElementById('pwClose');
+    if(!m || !form || !input){ resolve(null); return; }
+    if(pwResolve){ const prev=pwResolve; pwResolve=null; prev(null); }   // 이전 대기 정리
+    pwResolve=resolve;
+    input.value='';
+    if(!m.dataset.wired){
+      m.dataset.wired='1';
+      form.addEventListener('submit', e=>{ e.preventDefault(); closePw(input.value); });
+      closeBtn.addEventListener('click', ()=> closePw(null));
+      m.addEventListener('click', e=>{ if(e.target===m) closePw(null); });
+      document.addEventListener('keydown', e=>{ if(e.key==='Escape' && m.classList.contains('open')) closePw(null); });
+    }
+    m.classList.add('open'); m.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    pushModalState();
+    setTimeout(()=>{ try{ input.focus(); }catch(e){} }, 60);
+  });
 }
 
 let lbIndex=0, lbBuilt=false;
@@ -1112,7 +1181,7 @@ async function gbAdd(entry){
 }
 async function gbDelete(id){
   const item=gbCache.find(c=>String(c.id)===String(id)); if(!item) return;
-  const pass=prompt('작성 시 입력한 비밀번호를 입력하세요'); if(pass===null) return;
+  const pass=await askPassword(); if(pass===null) return;
 
   const removeLocal=()=>{
     gbCache=gbCache.filter(c=>String(c.id)!==String(id));
@@ -1219,8 +1288,30 @@ function initFx(){
   tick();
 }
 
+/* 초기 로딩 화면: 폰트(+커버 사진) 로드 완료 후 페이지 공개 → 글씨체 깜빡임 방지 */
+function initLoader(){
+  const loader=document.getElementById('loader'); if(!loader) return;
+  const start=performance.now();
+  const MIN_MS=700;                 // 최소 표시(깜빡임 방지)
+  let done=false;
+  const hide=()=>{
+    const wait=Math.max(0, MIN_MS-(performance.now()-start));
+    setTimeout(()=>{ loader.classList.add('loaded'); setTimeout(()=> loader.classList.add('hidden'), 650); }, wait);
+  };
+  const ready=()=>{ if(done) return; done=true; hide(); };
+  const waits=[];
+  if(document.fonts && document.fonts.ready) waits.push(document.fonts.ready);
+  const cover=document.querySelector('.cover-img');
+  if(cover && !cover.complete){
+    waits.push(new Promise(res=>{ cover.addEventListener('load',res,{once:true}); cover.addEventListener('error',res,{once:true}); }));
+  }
+  Promise.all(waits).then(ready);
+  setTimeout(ready, 4500);           // 안전장치: 폰트 API 미지원/지연 시 최대 대기
+}
+
 /* INIT */
 render();
+initLoader();
 initKakao();
 initKakaoMap();
 wireBgm();

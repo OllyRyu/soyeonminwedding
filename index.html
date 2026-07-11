@@ -1114,21 +1114,37 @@ async function gbDelete(id){
   const item=gbCache.find(c=>String(c.id)===String(id)); if(!item) return;
   const pass=prompt('작성 시 입력한 비밀번호를 입력하세요'); if(pass===null) return;
 
+  const removeLocal=()=>{
+    gbCache=gbCache.filter(c=>String(c.id)!==String(id));
+    gbSaveLocal(gbLoadLocal().filter(c=>String(c.id)!==String(id)));
+    gbRender();
+  };
+
   if(CONFIG.guestbookEndpoint){
-    // 서버(구글시트) 방명록: 비밀번호 검증은 서버가 하고, 실제 결과(삭제됨/비번틀림)를 JSONP로 돌려받음
     showToast('삭제 처리 중…','⏳');
+
+    // 1) 새 서버(JSONP 삭제) 시도 — 실제 결과({ok,deleted,reason})를 주면 그대로 사용
     const res=await gbJsonp({ type:'guestbook', action:'delete', id, password:pass });
-    const removeLocal=()=>{
-      gbCache=gbCache.filter(c=>String(c.id)!==String(id));
-      gbSaveLocal(gbLoadLocal().filter(c=>String(c.id)!==String(id)));
-      gbRender();
-    };
-    if(res && res.ok){
+    if(res && !Array.isArray(res) && typeof res==='object' && 'ok' in res){
       if(res.deleted || res.reason==='notfound'){ removeLocal(); showToast('메시지가 삭제되었습니다'); }
       else showToast('비밀번호가 일치하지 않습니다','✕');
-    }else{
-      showToast('삭제가 지연되었어요. 잠시 후 다시 시도해 주세요','⚠️');
+      return;
     }
+
+    // 2) 구 서버 호환: POST로 삭제 요청(서버가 비번 검증) 후, 목록 재조회로 성공 여부 확인
+    try{
+      await fetch(CONFIG.guestbookEndpoint, { method:'POST', mode:'no-cors',
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+        body:JSON.stringify({ type:'guestbook', action:'delete', id, password:pass }) });
+    }catch(e){}
+    let gone=false;
+    for(let i=0;i<5 && !gone;i++){                 // 서버 반영까지 최대 ~5초 재확인
+      await new Promise(r=> setTimeout(r, 1000));
+      const list=await gbFetchRemote();
+      if(list) gone = !list.some(c=>String(c.id)===String(id));
+    }
+    if(gone){ removeLocal(); showToast('메시지가 삭제되었습니다'); }
+    else showToast('비밀번호가 일치하지 않습니다','✕');
     return;
   }
 

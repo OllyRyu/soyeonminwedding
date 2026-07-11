@@ -1037,6 +1037,7 @@ function wireContact(){
 /* ============================================================
    배경음악 (상단 재생/정지 버튼)
    ============================================================ */
+let bgmHold=true;                  // 로딩 화면이 떠 있는 동안 무음 유지(재생 권한만 미리 확보)
 function wireBgm(){
   const audio=document.getElementById('bgm'), btn=document.getElementById('bgmToggle');
   if(!audio || !btn) return;
@@ -1044,6 +1045,7 @@ function wireBgm(){
   const MAXVOL=0.5, FADEIN=2, FADEOUT=4;   // 볼륨/페이드인(2초)/페이드아웃(초)
   audio.volume=0;
   audio.addEventListener('timeupdate', ()=>{
+    if(bgmHold){ audio.volume=0; return; }                                   // 로딩 중: 무음 유지
     const t=audio.currentTime, d=audio.duration;
     let v=MAXVOL;
     if(t<FADEIN) v=MAXVOL*(t/FADEIN);                                        // 시작: 2초 페이드 인(곡 길이 몰라도 동작)
@@ -1488,8 +1490,13 @@ function initLoader(){
   };
   const ready=()=>{
     if(done) return; done=true;
-    // 로딩이 끝나는 시점에 재생 시도 — 차단된 환경(아이폰·QR 등)은 첫 탭에서 재생(wireBgm)
-    if(bgm){ const p=bgm.play(); if(p && p.catch) p.catch(()=>{}); }
+    // 로딩 종료: 무음 해제 후 곡을 처음으로 되감아 시작(미리 재생 권한을 확보해둔 경우),
+    // 재생 전이면 시도 — 차단된 환경(아이폰·QR 등)은 첫 탭에서 재생(wireBgm)
+    bgmHold=false;
+    if(bgm){
+      if(!bgm.paused){ try{ bgm.currentTime=0; }catch(e){} bgm.volume=0; }
+      else { const p=bgm.play(); if(p && p.catch) p.catch(()=>{}); }
+    }
     hide();
   };
   const waits=[];

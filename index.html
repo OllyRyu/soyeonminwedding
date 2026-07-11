@@ -196,8 +196,9 @@
   .loader-inner{ display:flex; flex-direction:column; align-items:center; gap:20px; }
   .loader-ring{ width:38px; height:38px; border-radius:50%; border:2px solid var(--accent-soft); border-top-color:var(--accent);
     animation:ldspin .85s linear infinite; }
-  .loader-names{ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:23px; letter-spacing:.08em; color:var(--accent); }
-  .loader-sub{ font-family:'Noto Sans KR',sans-serif; font-size:11px; letter-spacing:.28em; color:var(--muted); }
+  /* 웹폰트 대신 시스템 글꼴 사용 → 로딩 중 폰트 도착 시 & 모양이 바뀌는 현상 방지 */
+  .loader-names{ font-family:serif; font-size:23px; letter-spacing:.08em; color:var(--accent); }
+  .loader-sub{ font-family:sans-serif; font-size:11px; letter-spacing:.28em; color:var(--muted); }
   @keyframes ldspin{ to{ transform:rotate(360deg); } }
 
   .rsvp-lbl{ display:block; font-family:var(--sans); font-size:12px; color:var(--soft); margin-bottom:7px; letter-spacing:.04em; }
@@ -460,7 +461,7 @@ function locationSection(){
         <span class="sans" style="font-weight:600; font-size:14.5px; color:var(--accent);">${esc(x.title)}</span>
       </div>
       <div class="sans" style="color:var(--soft); font-size:13px; margin-top:10px; line-height:1.75;">
-        ${x.lines.map(l=>`<div>${esc(l)}</div>`).join('')}
+        ${(()=>{const hasBullet=x.lines.some(l=>l.trim().startsWith('·'));return x.lines.map(l=>{const indent=hasBullet&&!l.trim().startsWith('·');return `<div${indent?' style="padding-left:14px;"':''}>${esc(l)}</div>`;}).join('');})()}
       </div>
     </div>`).join('');
   return `
@@ -469,7 +470,7 @@ function locationSection(){
       <h2 class="stitle" style="color:var(--accent);">오시는 길</h2>
       <div class="rule-h"></div>
       <p class="sans" style="font-size:15px; font-weight:500;">${esc(DATA.venue)} · ${esc(DATA.hall)}</p>
-      <p class="sans" style="color:var(--muted); font-size:13px; margin-top:5px;">${esc(DATA.address)}</p>
+      <p class="sans" style="color:var(--muted); font-size:13px; margin-top:5px;">${esc(DATA.address).replace(' (메리빌리아 웨딩홀)', '<br/>(메리빌리아 웨딩홀)')}</p>
     </div>
     <div class="card" style="margin:22px 0; overflow:hidden;">
       <div id="kakaoMap" style="width:100%; height:230px;"></div>
@@ -850,17 +851,22 @@ function closeTopModal(){
 }
 
 /* 커스텀 비밀번호 입력 팝업(네이티브 prompt 대체 — '~페이지의 내용' 문구 안 보이게) */
-let pwResolve=null;
+let pwResolve=null, pwVerify=null, pwBusy=false;
 function closePw(val, fromPop){
   const m=document.getElementById('pwModal'); if(!m) return;
   if(!m.classList.contains('open')) return;
   m.classList.remove('open'); m.setAttribute('aria-hidden','true');
   document.body.style.overflow='';
+  const sb=m.querySelector('#pwForm button[type=submit]');
+  if(sb){ sb.disabled=false; sb.textContent='확인'; }
+  pwBusy=false; pwVerify=null;
   if(!fromPop) popModalState();
   const r=pwResolve; pwResolve=null;
   if(r) r(val);
 }
-function askPassword(){
+/* verify(값) → Promise<truthy>: 성공이면 팝업을 닫고, falsy면 재시도할 수 있게 열어 둔다.
+   verify가 없으면 종전처럼 제출 즉시 값을 반환한다. */
+function askPassword(verify){
   return new Promise(resolve=>{
     const m=document.getElementById('pwModal');
     const form=document.getElementById('pwForm');
@@ -868,14 +874,30 @@ function askPassword(){
     const closeBtn=document.getElementById('pwClose');
     if(!m || !form || !input){ resolve(null); return; }
     if(pwResolve){ const prev=pwResolve; pwResolve=null; prev(null); }   // 이전 대기 정리
-    pwResolve=resolve;
+    pwResolve=resolve; pwVerify=verify||null; pwBusy=false;
     input.value='';
     if(!m.dataset.wired){
       m.dataset.wired='1';
-      form.addEventListener('submit', e=>{ e.preventDefault(); closePw(input.value); });
-      closeBtn.addEventListener('click', ()=> closePw(null));
-      m.addEventListener('click', e=>{ if(e.target===m) closePw(null); });
-      document.addEventListener('keydown', e=>{ if(e.key==='Escape' && m.classList.contains('open')) closePw(null); });
+      form.addEventListener('submit', async e=>{
+        e.preventDefault();
+        if(pwBusy || !pwResolve) return;
+        const val=input.value;
+        if(!pwVerify){ closePw(val); return; }        // 검증자 없으면 즉시 반환(종전 동작)
+        pwBusy=true;
+        const sb=form.querySelector('button[type=submit]');
+        if(sb){ sb.disabled=true; sb.textContent='삭제 중…'; }
+        let ok=false;
+        try{ ok=await pwVerify(val); }catch(_){ ok=false; }
+        if(ok){ closePw(val); }                        // 삭제 완료 → 팝업 닫힘
+        else{                                           // 실패 → 재시도 위해 열어 둠
+          pwBusy=false;
+          if(sb){ sb.disabled=false; sb.textContent='확인'; }
+          input.value=''; try{ input.focus(); }catch(_){}
+        }
+      });
+      closeBtn.addEventListener('click', ()=>{ if(!pwBusy) closePw(null); });
+      m.addEventListener('click', e=>{ if(e.target===m && !pwBusy) closePw(null); });
+      document.addEventListener('keydown', e=>{ if(e.key==='Escape' && m.classList.contains('open') && !pwBusy) closePw(null); });
     }
     m.classList.add('open'); m.setAttribute('aria-hidden','false');
     document.body.style.overflow='hidden';
@@ -1191,6 +1213,7 @@ async function gbAdd(entry){
   const local=gbLoadLocal(); local.push(entry); gbSaveLocal(local);
   gbCache.unshift(entry); gbRender();
   if(CONFIG.guestbookEndpoint){
+    // 서버 전송이 끝난 뒤 호출부에서 팝업을 닫도록 완료를 기다림
     await fetch(CONFIG.guestbookEndpoint, { method:'POST', mode:'no-cors',
       headers:{ 'Content-Type':'text/plain;charset=utf-8' },
       body:JSON.stringify({ type:'guestbook', action:'add', ...entry }) });
@@ -1198,49 +1221,47 @@ async function gbAdd(entry){
 }
 async function gbDelete(id){
   const item=gbCache.find(c=>String(c.id)===String(id)); if(!item) return;
-  const pass=await askPassword(); if(pass===null) return;
 
-  if(CONFIG.guestbookEndpoint){
-    // 낙관적 UI: 즉시 목록에서 제거해 체감 지연 제거(비번 틀리면 아래에서 복원)
-    const snapshot=gbCache.slice();
+  const removeLocal=()=>{
     gbCache=gbCache.filter(c=>String(c.id)!==String(id));
-    gbRender();
-    const commit=()=>{ gbSaveLocal(gbLoadLocal().filter(c=>String(c.id)!==String(id))); showToast('메시지가 삭제되었습니다'); };
-    const rollback=()=>{ gbCache=snapshot; gbRender(); showToast('비밀번호가 일치하지 않습니다','✕'); };
+    gbSaveLocal(gbLoadLocal().filter(c=>String(c.id)!==String(id)));
+    gbRender(); showToast('메시지가 삭제되었습니다');
+  };
 
-    // 새 서버(JSONP)·구 서버(POST) 삭제를 동시에 요청해 왕복 시간 단축
-    const jsonpP=gbJsonp({ type:'guestbook', action:'delete', id, password:pass });
-    const postP=fetch(CONFIG.guestbookEndpoint, { method:'POST', mode:'no-cors',
-      headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-      body:JSON.stringify({ type:'guestbook', action:'delete', id, password:pass }) }).catch(()=>{});
+  // 삭제가 실제로 완료되면 true를 반환 → 그때 비밀번호 팝업이 닫힘(틀리면 열린 채 재시도)
+  await askPassword(async pass=>{
+    if(CONFIG.guestbookEndpoint){
+      // 새 서버(JSONP)·구 서버(POST) 삭제를 동시에 요청해 왕복 시간 단축
+      const jsonpP=gbJsonp({ type:'guestbook', action:'delete', id, password:pass });
+      const postP=fetch(CONFIG.guestbookEndpoint, { method:'POST', mode:'no-cors',
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+        body:JSON.stringify({ type:'guestbook', action:'delete', id, password:pass }) }).catch(()=>{});
 
-    // 새 서버가 실제 결과({ok,deleted,reason})를 주면 그대로 사용(재배포 시 즉시 처리)
-    const res=await jsonpP;
-    if(res && !Array.isArray(res) && typeof res==='object' && 'ok' in res){
-      if(res.deleted || res.reason==='notfound') commit(); else rollback();
-      return;
+      // 새 서버가 실제 결과({ok,deleted,reason})를 주면 그대로 사용
+      const res=await jsonpP;
+      if(res && !Array.isArray(res) && typeof res==='object' && 'ok' in res){
+        if(res.deleted || res.reason==='notfound'){ removeLocal(); return true; }
+        showToast('비밀번호가 일치하지 않습니다','✕'); return false;
+      }
+
+      // 구 서버: POST 완료 후 재조회로 검증(보통 1회면 확인됨)
+      await postP;
+      let gone=false;
+      for(let i=0;i<3 && !gone;i++){
+        const list=await gbFetchRemote();
+        if(list) gone = !list.some(c=>String(c.id)===String(id));
+        if(!gone) await new Promise(r=> setTimeout(r, 500));
+      }
+      if(gone){ removeLocal(); return true; }
+      showToast('비밀번호가 일치하지 않습니다','✕'); return false;
     }
 
-    // 구 서버: POST 완료 후 재조회로 검증(보통 1회면 확인됨)
-    await postP;
-    let gone=false;
-    for(let i=0;i<3 && !gone;i++){
-      const list=await gbFetchRemote();
-      if(list) gone = !list.some(c=>String(c.id)===String(id));
-      if(!gone) await new Promise(r=> setTimeout(r, 500));
+    // 로컬 전용(엔드포인트 없음): 클라이언트가 비밀번호 검증
+    if(item.password!=null && item.password!=='' && String(pass)!==String(item.password)){
+      showToast('비밀번호가 일치하지 않습니다','✕'); return false;
     }
-    if(gone) commit(); else rollback();
-    return;
-  }
-
-  // 로컬 전용(엔드포인트 없음): 클라이언트가 비밀번호 검증
-  if(item.password!=null && item.password!=='' && String(pass)!==String(item.password)){
-    showToast('비밀번호가 일치하지 않습니다','✕'); return;
-  }
-  gbCache=gbCache.filter(c=>String(c.id)!==String(id));
-  gbSaveLocal(gbLoadLocal().filter(c=>String(c.id)!==String(id)));
-  gbRender();
-  showToast('메시지가 삭제되었습니다');
+    removeLocal(); return true;
+  });
 }
 
 /* 방명록 수정 */

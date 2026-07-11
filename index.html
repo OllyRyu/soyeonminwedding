@@ -1082,8 +1082,14 @@ function wireBgm(){
   }
   GESTURES.forEach(ev=> document.addEventListener(ev, firstGesture, { passive:true }));
 
-  // 재생 시작은 로딩 화면(initLoader)이 주도하되, 버퍼 완료·탭 복귀 시에도 보조 시도(허용 환경 놓침 방지)
+  // 자동재생 적극 시도(삼성인터넷 등 허용 브라우저): 즉시 + 재생될 때까지 0.5초 간격 재시도(최대 6초)
+  tryAuto();
   if(audio.readyState<3) audio.addEventListener('canplaythrough', tryAuto, { once:true });
+  let autoTries=0;
+  const autoTimer=setInterval(()=>{
+    if(userActed || !audio.paused || ++autoTries>12){ clearInterval(autoTimer); return; }
+    tryAuto();
+  }, 500);
   document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') tryAuto(); });
 }
 

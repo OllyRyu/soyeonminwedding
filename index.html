@@ -1067,12 +1067,15 @@ function wireBgm(){
   });
   const tryAuto=()=>{ if(!userActed && audio.paused) audio.play().catch(()=>{}); };
 
-  // 브라우저 자동재생 정책 대응: 첫 사용자 동작(버튼 외 어떤 상호작용이든)에서 즉시 재생
-  const GESTURES=['pointerdown','touchstart','click','keydown','scroll'];
+  // 브라우저 자동재생 정책 대응: 사용자 동작에서 재생 시도, 성공할 때까지 재시도
+  const GESTURES=['pointerdown','touchstart','touchend','click','keydown','scroll'];
+  const cleanup=()=> GESTURES.forEach(ev=> document.removeEventListener(ev, firstGesture));
   function firstGesture(e){
     if(e.target && e.target.closest && e.target.closest('#bgmToggle')) return;
-    GESTURES.forEach(ev=> document.removeEventListener(ev, firstGesture));
-    if(!userActed && audio.paused) audio.play().catch(()=>{});
+    if(userActed || !audio.paused){ cleanup(); return; }
+    const p=audio.play();
+    if(p && p.then) p.then(cleanup).catch(()=>{});   // 실패 시 리스너 유지 → 다음 동작에서 재시도
+    else cleanup();
   }
   GESTURES.forEach(ev=> document.addEventListener(ev, firstGesture, { passive:true }));
 

@@ -1489,7 +1489,9 @@ function initLoader(){
     waits.push(new Promise(res=>{ cover.addEventListener('load',res,{once:true}); cover.addEventListener('error',res,{once:true}); }));
   }
   // BGM이 끊김 없이 재생 가능해질 때까지(canplaythrough) 로딩 화면 유지
-  if(bgm){
+  // 단 iOS는 터치 전 오디오 사전 로딩을 막아 신호가 오지 않으므로 기다리지 않음(로딩 8초 걸리던 문제)
+  const IS_IOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+  if(bgm && !IS_IOS){
     if(bgm.readyState<4){
       waits.push(new Promise(res=>{ bgm.addEventListener('canplaythrough',res,{once:true}); bgm.addEventListener('error',res,{once:true}); }));
     }

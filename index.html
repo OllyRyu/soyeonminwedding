@@ -1050,15 +1050,14 @@ function wireBgm(){
     else if(d && isFinite(d) && t>d-FADEOUT) v=MAXVOL*((d-t)/FADEOUT);       // 끝: 페이드 아웃(곡 길이 알 때만)
     audio.volume=Math.max(0, Math.min(MAXVOL, v));
   });
+  const IOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
   audio.addEventListener('play', ()=>{                      // 시작 순간 무음 보장 + 디코더 글리치(첫 프레임 잡음) 마스킹
     if(audio.currentTime<FADEIN){
-      audio.volume=0;
-      audio.muted=true;                                     // muted는 iOS에서도 동작
-      setTimeout(()=>{
-        audio.muted=false;
-        // 일부 브라우저는 음소거 해제를 정책 위반으로 보고 정지시킴 → 즉시 재생 재시도
-        if(audio.paused) audio.play().catch(()=>{});
-      }, 200);
+      audio.volume=0;                                       // 안드로이드/PC: 볼륨 0 + 페이드인으로 충분
+      if(IOS){                                              // iOS만: 볼륨 조절이 안 되므로 muted로 마스킹
+        audio.muted=true;                                   // (안드로이드에 적용하면 음소거 해제를 위반으로 보고 정지시켜 자동재생이 깨짐)
+        setTimeout(()=>{ audio.muted=false; if(audio.paused) audio.play().catch(()=>{}); }, 200);
+      }
     }
   });
   const sync=()=> btn.classList.toggle('playing', !audio.paused);

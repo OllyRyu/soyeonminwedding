@@ -51,7 +51,7 @@
     font-family:var(--heading); font-style:italic; font-size:21px; letter-spacing:.08em;
     text-transform:uppercase; color:var(--accent); margin-bottom:14px;
   }
-  .stitle{ font-family:var(--serifko); font-weight:300; font-size:23px; letter-spacing:.28em; color:var(--text); }
+  .stitle{ font-family:var(--serifko); font-weight:300; font-size:21px; letter-spacing:.28em; color:var(--text); }
   .rule{ width:1px; height:46px; background:var(--line); margin:0 auto; }
   .rule-h{ width:40px; height:1px; background:var(--accent-soft); margin:20px auto; }
 
@@ -567,7 +567,7 @@ function accountSection(){
       </div>
     </div>`;
   return `
-  <section class="sec reveal" style="background:var(--bg2);">
+  <section class="sec reveal">
     <div style="text-align:center;">
       <h2 class="stitle" style="color:var(--accent);">마음 전하실 곳</h2>
       <div class="rule-h"></div>
@@ -627,7 +627,7 @@ function rsvpSection(){
 
 function guestbookSection(){
   return `
-  <section class="sec reveal">
+  <section class="sec reveal" style="background:var(--bg2);">
     <div style="text-align:center;">
       <h2 class="stitle" style="color:var(--accent);">방명록</h2>
       <div class="rule-h"></div>
@@ -659,7 +659,7 @@ function render(){
   document.getElementById('invitation').innerHTML =
     coverSection() + greetingSection() + calendarSection() + contactSection() +
     locationSection() + gallerySection() +
-    accountSection() + guestbookSection() + footerSection();
+    guestbookSection() + accountSection() + footerSection();
   buildCalendar();
   wireFeatures();
   observeReveal();

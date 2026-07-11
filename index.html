@@ -191,7 +191,7 @@
   /* ── 초기 로딩 화면(폰트 로드 완료 전까지 표시 → 글씨체 깜빡임 방지) ── */
   /* & 글리프(Cormorant Garamond Italic)만 잘라 HTML에 내장 → 네트워크 로딩 없이 처음부터 같은 모양 */
   @font-face{
-    font-family:'LoaderAmp'; font-style:italic; font-weight:400; unicode-range:U+26;
+    font-family:'LoaderAmp'; font-style:normal; font-weight:400; unicode-range:U+26;
     src:url(data:font/woff2;base64,d09GMgABAAAAAARQAA8AAAAAB6QAAAP4AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG3QcLgZgP1NUQVREADwRCAqDdINHCwgAATYCJAMMBCAFhHAHIAwHG20GyAQe+PesPzfJKLcaqO1CHsBZKNMF5L8HFw92fOB+pgtOnbbo1H70W2JSJAVlU5mUZZxFEzY4nq3YukUHjPqIxMqPQgA6nclAy8krqcHtmzttAu7R00aOxz3BnDEJNxoON0FYjx85bRKRQDlNVwgnHEVEYfkV4l7UNcUtKZ+QTO2YBXPJ6Bna0x5VmYQ4JcS9zqnRByvxhdhCWJ6yTulv/ULxZjJpYihd+ZIk5yiKlSE+nE9S69MdZeVluSylMS3VA/9/ZCJaofAoJxDLlKnkb4yaIUQK4lay5otnjx4zQ0gYO8OcIB76XWivgBMvqChUhF1sAeWBukO5gbifURtoGUD4R5ICuij0Jmx9ZL2bBaZqQpaF8wB1JQ8X7Sy/7HjvBWihXL+rqklNs4XrWritaVL7AfPtc+pkI93gW72yxpCGXttIeuukoTeWHunVDR0EpBrQ971e3XCkkucFHe/v0RtJj54kvbq5LhgMNjseCsn1N9tUHLqnr3vwxHskEAjI9aGQ0cLv99cn3A+FzL3F0n27doml5+X6iyzx+/1+Y90usfTxC3L9c889J9fvNpQt2y3b+b+6cEdf9/zzz+vrdrBk716W7CFGxn7ZQKpfvpSzo2JQbscGlTsq0/M6ukbtip2yy1G+ePDmoet3xk4ZuLthfsPFg+zlDfN2uuobyIzZLQbK3JSKnRX9qlO6L6tqWP/TrswUmTOwaNewlNrU8h3D+uSm0E2mDOmUVpUw+tSt7OpBnTolvxxj/vxbnOdZ1LSL7tEpxdWtO6b70lMWqIPDIsYUbZidE/Xy3vZ12QMKigo75DeJO/HPQ7vT5Ui41aRd57qKquHlZsHXyP9iPI4Sr2fWpp4Jjr8joy5dlrbn7fo3scmXXvIkr748J9n5b6Q+ZYoesaUuqZpamjXg1ciNw5wpv0WqagvVfzBi1qaln5xMjbc2/v+F1ksr7TlcD3FAn8qxNv5fqfVSv+QKyXpVPEPwNSg/kNMCHV+3mTEC8knWtUOPFkXBEyLrYBI0Fw1NCjYRY1LJ40WTRlf2mcJws8QUTmcqjA564h4Q6i/cQkKFQ7TzU6CKkYxmJhMwmYbBSMYymjHMWOTOYArT6UsnFidbiZFMYhQXTmIGExiL72L5dEbSkclMYzTZASYyzFeQ/1OYl+mTGEEHCuEwPxXrRD4NYx98V2O605HOdKbLT/o3FtvGVZ/9tf0oo5wycumXmZpDy/rUY+8U5jJXaf7GdM3Ad/egMTWMYSSNfyJWIHsy4xiJ79Sfycwqpx6L0ynVmtGMleMzqacjPiYzkU5kY95wmJUWnE5ec2D6g7oqUptRaz7rd7AO0JUk846wVl7RNgIA) format('woff2');
   }
   #loader{ position:fixed; inset:0; z-index:400; background:#f8f4ee; display:flex; align-items:center; justify-content:center;
@@ -201,8 +201,10 @@
   .loader-inner{ display:flex; flex-direction:column; align-items:center; gap:20px; }
   .loader-ring{ width:38px; height:38px; border-radius:50%; border:2px solid var(--accent-soft); border-top-color:var(--accent);
     animation:ldspin .85s linear infinite; }
-  /* &는 내장 폰트(LoaderAmp)로 즉시 렌더 → 로딩 중 모양이 바뀌지 않음 */
-  .loader-names{ font-family:'LoaderAmp',serif; font-style:italic; font-size:19px; letter-spacing:.08em; color:var(--accent); }
+  /* &는 내장 폰트(LoaderAmp)로 즉시 렌더 → 로딩 중 모양이 바뀌지 않음 (기울임 없음) */
+  .loader-names{ font-family:'LoaderAmp',serif; font-size:19px; letter-spacing:.08em; color:var(--accent); }
+  .loader-tap{ font-family:sans-serif; font-size:12px; letter-spacing:.18em; color:var(--accent); animation:ldblink 1.6s ease-in-out infinite; }
+  @keyframes ldblink{ 0%,100%{ opacity:.35; } 50%{ opacity:1; } }
   .loader-sub{ font-family:sans-serif; font-size:11px; letter-spacing:.28em; color:var(--muted); }
   @keyframes ldspin{ to{ transform:rotate(360deg); } }
 
@@ -238,6 +240,7 @@
       <div class="loader-ring"></div>
       <div class="loader-names">영민 &amp; 소연</div>
       <div class="loader-sub">WEDDING INVITATION</div>
+      <div class="loader-tap" id="loaderTap" hidden>화면을 터치해 주세요</div>
     </div>
   </div>
   <div id="app">
@@ -1054,9 +1057,7 @@ function wireBgm(){
   }
   GESTURES.forEach(ev=> document.addEventListener(ev, firstGesture, { passive:true }));
 
-  // 입장 즉시 자동 재생 시도(가능한 브라우저·카톡 인앱 등에서는 바로 재생, 막히면 첫 동작에서 재생)
-  tryAuto();
-  if(audio.readyState<3) audio.addEventListener('canplaythrough', tryAuto, { once:true });
+  // 재생 시작 시점은 로딩 화면(initLoader)이 관리 — 여기서는 탭 복귀 시 재생만 처리
   document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') tryAuto(); });
 }
 
@@ -1438,17 +1439,31 @@ function initFx(){
   tick();
 }
 
-/* 초기 로딩 화면: 폰트(+커버 사진) 로드 완료 후 페이지 공개 → 글씨체 깜빡임 방지 */
+/* 초기 로딩 화면: 폰트·커버·BGM 로드 완료 후 음악과 함께 입장
+   자동재생이 막힌 환경(아이폰 등)은 '화면을 터치해 주세요'로 전환 → 터치 순간 음악 시작+입장 */
 function initLoader(){
   const loader=document.getElementById('loader'); if(!loader) return;
   const start=performance.now();
   const MIN_MS=700;                 // 최소 표시(깜빡임 방지)
   let done=false;
+  const bgm=document.getElementById('bgm');
   const hide=()=>{
     const wait=Math.max(0, MIN_MS-(performance.now()-start));
     setTimeout(()=>{ loader.classList.add('loaded'); setTimeout(()=> loader.classList.add('hidden'), 650); }, wait);
   };
-  const ready=()=>{ if(done) return; done=true; hide(); };
+  const tapGate=()=>{                // 자동재생 차단: 터치를 입장 신호로 사용
+    const ring=loader.querySelector('.loader-ring');
+    const tip=document.getElementById('loaderTap');
+    if(ring) ring.style.display='none';
+    if(tip) tip.hidden=false;
+    loader.addEventListener('pointerdown', ()=>{ if(bgm) bgm.play().catch(()=>{}); hide(); }, { once:true });
+  };
+  const ready=()=>{
+    if(done) return; done=true;
+    if(!bgm){ hide(); return; }
+    const p=bgm.play();              // 로딩이 끝나는 시점에 재생 시작
+    if(p && p.then) p.then(hide).catch(tapGate); else hide();
+  };
   const waits=[];
   if(document.fonts && document.fonts.ready) waits.push(document.fonts.ready);
   const cover=document.querySelector('.cover-img');
@@ -1456,7 +1471,6 @@ function initLoader(){
     waits.push(new Promise(res=>{ cover.addEventListener('load',res,{once:true}); cover.addEventListener('error',res,{once:true}); }));
   }
   // BGM이 끊김 없이 재생 가능해질 때까지(canplaythrough) 로딩 화면 유지
-  const bgm=document.getElementById('bgm');
   if(bgm){
     try{ bgm.load(); }catch(e){}
     if(bgm.readyState<4){
@@ -1464,7 +1478,7 @@ function initLoader(){
     }
   }
   Promise.all(waits).then(ready);
-  setTimeout(ready, 8000);           // 안전장치: 지원 안 되거나(iOS 등) 네트워크 지연 시 최대 대기
+  setTimeout(ready, 8000);           // 안전장치: 네트워크 지연 시 최대 대기
 }
 
 /* INIT */

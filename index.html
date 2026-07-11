@@ -1037,7 +1037,13 @@ function wireBgm(){
     else if(d && isFinite(d) && t>d-FADEOUT) v=MAXVOL*((d-t)/FADEOUT);       // 끝: 페이드 아웃(곡 길이 알 때만)
     audio.volume=Math.max(0, Math.min(MAXVOL, v));
   });
-  audio.addEventListener('play', ()=>{ if(audio.currentTime<FADEIN) audio.volume=0; });   // 시작 순간 무음 보장(풀볼륨 삑사리 방지)
+  audio.addEventListener('play', ()=>{                      // 시작 순간 무음 보장 + 디코더 글리치(첫 프레임 잡음) 마스킹
+    if(audio.currentTime<FADEIN){
+      audio.volume=0;
+      audio.muted=true;                                     // muted는 iOS에서도 동작
+      setTimeout(()=>{ audio.muted=false; }, 200);
+    }
+  });
   const sync=()=> btn.classList.toggle('playing', !audio.paused);
   audio.addEventListener('play', sync);
   audio.addEventListener('pause', sync);
@@ -1475,7 +1481,6 @@ function initLoader(){
   }
   // BGM이 끊김 없이 재생 가능해질 때까지(canplaythrough) 로딩 화면 유지
   if(bgm){
-    try{ bgm.load(); }catch(e){}
     if(bgm.readyState<4){
       waits.push(new Promise(res=>{ bgm.addEventListener('canplaythrough',res,{once:true}); bgm.addEventListener('error',res,{once:true}); }));
     }

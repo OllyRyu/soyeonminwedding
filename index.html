@@ -487,7 +487,7 @@ function contactSection(){
 function accountSection(){
   const copyIcon = `<svg class="acct-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>`;
   const row = (label, name, bank, account) => `
-    <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding:14px 2px; border-top:1px solid var(--line);">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 2px; border-top:1px solid var(--line);">
       <div>
         <div class="sans" style="font-size:11.5px; color:var(--muted);">${esc(label)}</div>
         <div class="sans" style="font-weight:500; margin-top:3px; font-size:14px;">${esc(name)}</div>

@@ -1082,6 +1082,9 @@ function wireBgm(){
   }
   GESTURES.forEach(ev=> document.addEventListener(ev, firstGesture, { passive:true }));
 
+  // 입장 즉시 자동 재생 시도(삼성인터넷·카톡 등 허용 브라우저는 바로 재생, 막히면 첫 동작에서 재생)
+  tryAuto();
+  if(audio.readyState<3) audio.addEventListener('canplaythrough', tryAuto, { once:true });
   document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') tryAuto(); });
 }
 

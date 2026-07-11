@@ -182,7 +182,7 @@
   .acct:active{ opacity:.55; }
 
   /* ── 토스트 ── */
-  #toasts{ position:fixed; left:50%; bottom:40px; transform:translateX(-50%); z-index:120; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }
+  #toasts{ position:fixed; left:50%; bottom:40px; transform:translateX(-50%); z-index:300; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }  /* 팝업(210) 위, 로더(400) 아래 — 팝업 열린 상태에서도 안내가 보이게 */
   .toast{ background:rgba(47,43,40,.94); color:#fff; padding:11px 20px; border-radius:999px; font-family:var(--sans);
     font-size:13px; box-shadow:0 12px 30px -10px rgba(0,0,0,.5); opacity:0; transform:translateY(12px);
     transition:opacity .3s, transform .3s; display:flex; align-items:center; gap:8px; }

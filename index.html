@@ -205,11 +205,13 @@
   .loader-names{ font-family:'LoaderAmp',serif; font-size:19px; letter-spacing:.08em; color:var(--accent); }
   .loader-sub{ font-family:sans-serif; font-size:11px; letter-spacing:.28em; color:var(--muted); }
   @keyframes ldspin{ to{ transform:rotate(360deg); } }
-  /* 자동재생 차단 환경: '터치하여 입장' 안내로 전환 */
+  /* 자동재생 차단 환경: 스피너가 💌로 바뀌고 '터치해 초대장 열기' 안내로 전환 */
   #loader.tap{ cursor:pointer; }
   #loader.tap .loader-ring{ display:none; }
-  #loader.tap .loader-sub{ color:var(--accent); animation:ldpulse 1.6s ease-in-out infinite; }
+  .loader-tap-ico{ font-size:36px; line-height:1; animation:ldfloat 1.8s ease-in-out infinite; }
+  #loader.tap .loader-sub{ color:var(--accent); letter-spacing:.08em; animation:ldpulse 1.6s ease-in-out infinite; }
   @keyframes ldpulse{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+  @keyframes ldfloat{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-7px); } }
 
   .rsvp-lbl{ display:block; font-family:var(--sans); font-size:12px; color:var(--soft); margin-bottom:7px; letter-spacing:.04em; }
   .seg{ position:relative; display:block; cursor:pointer; }
@@ -1454,8 +1456,10 @@ function initLoader(){
     // 안드로이드(삼성 인터넷 등 크로뮴)는 스크롤이 인정되지 않아 '터치하여 입장'으로 전환
     const enterByTap=()=>{
       loader.classList.add('tap');
+      const ring=loader.querySelector('.loader-ring');
+      if(ring) ring.outerHTML='<div class="loader-tap-ico">💌</div>';
       const sub=loader.querySelector('.loader-sub');
-      if(sub) sub.textContent='터치하여 입장';
+      if(sub) sub.textContent='화면을 터치해 초대장을 열어주세요';
       loader.addEventListener('pointerup', ()=>{ if(bgm) bgm.play().catch(()=>{}); hide(); }, {once:true});
     };
     const p=bgm ? bgm.play() : null;

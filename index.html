@@ -338,12 +338,12 @@
    ============================================================ */
 const DATA = {
   groom:{ name:'류영민', father:'류인숙', mother:'손주희', motherDisplay:'손주희(손귀자)', role:'아들',
-          bank:'신한', account:'110-422-391332', holder:'류영민',
+          bank:'토스뱅크', account:'1002-1206-9222', holder:'류영민',
           fatherBank:'농협', fatherAccount:'302-0072-5209-11',
           motherBank:'신한', motherAccount:'110-134-514618',
           tel:'010-5141-4269', fatherTel:'010-5474-4269', motherTel:'010-9950-5637' },
   bride:{ name:'이소연', father:'이상민', mother:'김은희', role:'딸',
-          bank:'국민', account:'420402-04-146269', holder:'이소연',
+          bank:'하나', account:'777-910282-58107', holder:'이소연',
           fatherBank:'신한', fatherAccount:'829-11-008081',
           motherBank:'신한', motherAccount:'804-04-274851',
           tel:'010-4186-8511', fatherTel:'010-2532-0745', motherTel:'010-3299-8511' },
@@ -356,7 +356,7 @@ const DATA = {
   lat:37.38200, lng:126.65920,
   greeting:'각자의 세상을 사랑하며 살아왔습니다.\n서로를 만난 후,\n우리의 세상은 더 넓고 다채로워졌습니다.\n이제 그 모든 날을 함께 채워가려 합니다.\n소중한 발걸음으로 축복해주세요.',
   cover:'photo/bg.jpg',          // ▶ 커버(맨 위 큰 배경) 사진 — 같은 폴더의 photo/bg.jpg
-  gallery:Array.from({length:21}, (_,i)=>`photo/gallery/${i+1}.jpg`),   // photo/gallery/1.jpg ~ 21.jpg
+  gallery:[1,2,3,4,5,6,7,22,8,9,10,11,12,13,14,15,16,17,18,19,20,21].map(n=>`photo/gallery/${n}.jpg`),   // 표시 순서 — 22.jpg는 7과 8 사이
   maps:{
     kakao:'https://map.kakao.com/?q=' + encodeURIComponent('인천 송도 메리빌리아'),
     naver:'https://map.naver.com/p/search/' + encodeURIComponent('인천 송도 메리빌리아'),

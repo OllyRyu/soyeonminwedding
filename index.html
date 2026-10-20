@@ -1553,6 +1553,17 @@ window.addEventListener('popstate', closeTopModal);   // 뒤로가기 → 페이
   document.addEventListener('touchend', end);
   document.addEventListener('touchcancel', end);
 })();
+/* 방명록 '메시지 남기기': 누르자마자 글을 쓸 수 있게 (2026-10-20, 모두의모청과 같은 방법)
+   창이 아래에서 올라오는 중에 커서를 넣으면 아이폰에서 키보드만 뜨고 글자가 안 써짐 → 누른 순간엔 안 보이는 임시 칸으로 키보드를 올리고, 다 올라온 뒤 성함 칸으로 옮김 */
+document.addEventListener('click', e => {
+  if(!e.target.closest || !e.target.closest('#gbOpen')) return;
+  const m = document.getElementById('gbModal'); if(!m || !m.classList.contains('open')) return;
+  const nm = m.querySelector('[name=gbName]'); if(!nm) return;
+  const tmp = document.createElement('input'); tmp.setAttribute('aria-hidden', 'true'); tmp.tabIndex = -1;
+  tmp.style.cssText = 'position:fixed;top:40%;left:0;width:1px;height:1px;opacity:0;font-size:16px;border:0;padding:0;';
+  document.body.appendChild(tmp); try{ tmp.focus({ preventScroll:true }); }catch(_){ tmp.focus(); }
+  setTimeout(() => { try{ nm.focus({ preventScroll:true }); }catch(_){ nm.focus(); } tmp.remove(); }, 380);
+});
 </script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="theme-color" content="#ffffff" /><meta name="robots" content="noindex, nofollow" />
 <title>류영민♥이소연 결혼합니다.</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💍</text></svg>">
@@ -1521,6 +1521,38 @@ wireBgm();
 initFx();
 initVisits();
 window.addEventListener('popstate', closeTopModal);   // 뒤로가기 → 페이지 종료 대신 팝업만 닫기
+</script>
+<script>
+/* 손가락 확대: 두 손가락으로 벌려 크게 보고, 손을 떼면 바로 원래 크기로 (2026-10-20)
+   브라우저 기본 확대는 떼도 그대로 남아서 직접 처리. 사진 크게 보기·팝업은 청첩장 밖이라 영향 없음, 지도는 자체 확대 유지 */
+(function(){
+  const root = document.getElementById('invitation'); if(!root) return;
+  let start = null;
+  const dist = (a, b) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+  const skip = t => !root.contains(t) || (t.closest && t.closest('#kakaoMap'));
+  document.addEventListener('gesturestart', e => e.preventDefault(), { passive:false });   // 아이폰 기본 확대 막기
+  document.addEventListener('touchstart', e => {
+    if(e.touches.length !== 2 || skip(e.target)) return;
+    const [a, b] = e.touches, r = root.getBoundingClientRect();
+    start = { d: dist(a, b) || 1 };
+    root.style.transition = 'none';
+    root.style.transformOrigin = `${(a.clientX + b.clientX) / 2 - r.left}px ${(a.clientY + b.clientY) / 2 - r.top}px`;
+  }, { passive:true });
+  document.addEventListener('touchmove', e => {
+    if(!start || e.touches.length !== 2) return;
+    e.preventDefault();
+    const sc = Math.min(3, Math.max(1, dist(e.touches[0], e.touches[1]) / start.d));
+    root.style.transform = `scale(${sc})`;
+  }, { passive:false });
+  const end = e => {
+    if(!start || e.touches.length >= 2) return;
+    start = null;
+    root.style.transition = 'transform .25s ease';
+    root.style.transform = '';
+  };
+  document.addEventListener('touchend', end);
+  document.addEventListener('touchcancel', end);
+})();
 </script>
 </body>
 </html>

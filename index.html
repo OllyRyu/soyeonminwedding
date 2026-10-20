@@ -394,7 +394,7 @@ const CONFIG = {
 /* ============================================================
    2) 렌더
    ============================================================ */
-const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');   // 따옴표도 바꿔 속성 밖으로 못 빠져나가게(방명록 id 주입 방지)
 
 function coverSection(){
   return `
